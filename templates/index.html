@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smarthome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .main-container {
+            display: flex;
+        }
+        .container {
+            flex: 1;
+            padding: 20px;
+        }
+        .picturebox {
+            flex: 1;
+            padding: 10px;
+        }
+        .data {
+            font-size: 25px;
+        }
+        .switch-label {
+            font-size: 25px;
+        }
+        h3 {
+            position: relative;
+        }
+        h3::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 1px;
+            background-color: #000;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin-bottom: 0px;
+        }
+        .housepicture {
+            text-align: center;
+        }
+        .housepicture img {
+            width: 50%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h2> <i class="fa-regular fa-sun"></i> Smarthome</h2>
+        <p id="dateTime"></p>
+    </header>
+    <div class="main-container">
+        <div class="container">
+            <span style="font-size: 40px; position: relative; top: -17px ;font-weight: bold;">온도/기압/고도</span>
+            <hr style="border: none; border-top: 1px solid #001; margin-top: -20px; , bold">
+            <div class="data">
+                <p style="color: red;">
+                    <i class="fa-solid fa-temperature-three-quarters" style="font-size: 23px">
+                    </i> 온도: <span id = "temperature">{{ temperature }} °C
+                </p>
+                <p style="color: blue;"><i class="fa-solid fa-cloud" style="font-size: 20px"></i>기압: <span id="pressure">{{ pressure }} Pa</p>
+                <p style="color: gray;"><i class="fa-solid fa-mountain"></i>고도: <span id = "altitude">{{ altitude }} m</p>
+                <span id="temperatureMessage"></span>
+            </div>
+        </div>
+        <div class="additional-container">
+            <span style="font-size: 40px; position: relative; top: -17px ;font-weight: bold;">LED</span>
+            <hr style="border: none; border-top: 1px solid #001; margin-top: -20px; , bold"></hr/>
+            <p> 
+                <span style="font-size: 25px; position: relative; top: -17px ;font-weight: bold;">
+                <b> 전체 LED </b>
+                <a href="{{ url_for('all_on_off', state=1) }}"> <input type="button" value="On"style="font-size: 24px; padding: 5px 15px;"> </a> 
+                <a href="{{ url_for('all_on_off', state=0) }}"> <input type="button" value="Off"style="font-size: 24px; padding: 5px 15px;"> </a> 
+            </p>
+            <p >
+                <span style="font-size: 25px; position: relative; top: -17px ;font-weight: bold;">
+                <b> 거실 LED {% if led_states['white']==1 %} 
+                                {% elif led_states['white']==0 %}
+                                {% endif %}
+                </b>	
+                <a href="{{ url_for('led_switch', color='white', state=1) }}"><input type="button" value="On" style="font-size: 24px; padding: 5px 15px;"></a>
+                <a href="{{ url_for('led_switch', color='white', state=0) }}"> <input type="button" value="Off"style="font-size: 24px; padding: 5px 15px;"> </a>
+            </p>
+            <p >
+                <span style="font-size: 25px; position: relative; top: -17px ;font-weight: bold;">
+                <b>주방 LED {% if led_states['green']==1 %} 
+                                {% elif led_states['green']==0 %}
+                                {% endif %}
+                </b>	
+                <a href="{{ url_for('led_switch', color='green', state=1) }}"><input type="button" value="On" style="font-size: 24px; padding: 5px 15px;"></a>
+                <a href="{{ url_for('led_switch', color='green', state=0) }}"> <input type="button" value="Off"style="font-size: 24px; padding: 5px 15px;"> </a>
+            </p>
+            <p >
+                <span style="font-size: 25px; position: relative; top: -17px ;font-weight: bold;">
+                <b>화장실 LED {% if led_states['yellow']==1 %}  
+                                {% elif led_states['yellow']==0 %}
+                                {% endif %}
+                </b>	
+                <a href="{{ url_for('led_switch', color='yellow', state=1) }}"><input type="button" value="On" style="font-size: 24px; padding: 5px 15px;" ></a>
+                <a href="{{ url_for('led_switch', color='yellow', state=0) }}"> <input type="button" value="Off"style="font-size: 24px; padding: 5px 15px;"> </a>
+            </p>
+            <p >
+                <span style="font-size: 25px; position: relative; top: -17px ;font-weight: bold;">
+                <b>TV LED  {% if led_states['blue']==1 %}  
+                                {% elif led_states['blue']==0 %}
+                                {% endif %}
+                </b>	
+                <a href="{{ url_for('led_switch', color='blue', state=1) }}"><input type="button" value="On" style="font-size: 24px; padding: 5px 15px;" ></a>
+                <a href="{{ url_for('led_switch', color='blue', state=0) }}"> <input type="button" value="Off" style="font-size: 24px; padding: 5px 15px;"> </a>
+            </p>
+            
+        </div>
+        <div class="picturebox container">
+            <div id="temperatureMessageContainer">
+                <p>
+                    <span style="font-size: 40px; position: relative; top: -17px ;font-weight: bold;">
+                    <b>에어컨</b>
+                    <a href="{{ url_for('air_conditioner', state=1) }}">
+                        <span id = "airConditionerOnButton">
+                            <input type="button" value="On" style="font-size: 24px; padding: 10px 20px;"></a>
+                    <a href="{{ url_for('air_conditioner', state=0) }}">
+                        <span id = "airConditionerOffButton">
+                            <input type="button" value="Off"style="font-size: 24px; padding: 10px 20px;"></a>
+                </p>
+                <img id="airConditionerImageOn" src="../static/image/airon.png" alt="에어컨 이미지"style="display: none; max-width: 100%; max-height: 100%;">
+                <img id="airConditionerImageOff" src="../static/image/airoff.png" alt="에어컨 이미지" style="display: none; max-width: 100%; max-height: 100%;">
+             
+            </div>
+        </div>
+    </div>
+    <div class="boundary-container">
+        <div class="house-container">
+            <div class="housepicture">
+                <img src="../static/image/house12.png" alt="내 이미지">
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='smart.js') }}"></script>
+    <script>
+        function updateSensorData() {
+            fetch('/get_sensor_data')
+                .then(response => response.json())
+                .then(data => {
+                    // ... (existing code)
+    
+                    const temperatureMessageContainer = document.getElementById('temperatureMessageContainer');
+                    const temperatureMessage = document.getElementById('temperatureMessage');
+                    const airConditionerImageOn = document.getElementById('airConditionerImageOn');
+                    const airConditionerImageOff = document.getElementById('airConditionerImageOff');
+    
+                    if (data.temperature >= 25) {
+                        temperatureMessage.innerHTML = '기온이 25도 이상입니다...........에어컨을 켜주세요.';
+                        temperatureMessage.style.color = 'red';
+                        temperatureMessage.style.fontSize = '29px';
+                        airConditionerImageOn.style.display = 'block'; // Show the "on" image
+                        airConditionerImageOff.style.display = 'none'; // Hide the "off" image
+                    } 
+                    else {
+                        temperatureMessage.innerHTML = '온도가 25도 이하입니다';
+                        temperatureMessage.style.color = 'blue';
+                        temperatureMessage.style.fontSize = '29px';
+                        airConditionerImageOn.style.display = 'none'; // Hide the "on" image
+                        airConditionerImageOff.style.display = 'block'; // Show the "off" image
+                    }
+                });
+        }
+            
+        document.getElementById('airConditionerOnButton').addEventListener('click', function() {
+            // 에어컨을 켜는 요청을 서버로 보냄
+            fetch('/air_conditioner/1', { method: 'POST' })
+                .then(response => {
+                    if (response.status === 200) {
+                        // 성공적으로 요청 처리 시 이미지 업데이트
+                        updateAirConditionerImage(1);
+                    }
+                });
+        });
+    
+        document.getElementById('airConditionerOffButton').addEventListener('click', function() {
+            // 에어컨을 끄는 요청을 서버로 보냄
+            fetch('/air_conditioner/0', { method: 'POST' })
+                .then(response => {
+                    if (response.status === 200) {
+                        // 성공적으로 요청 처리 시 이미지 업데이트
+                        updateAirConditionerImage(0);
+                    }
+                });
+        });
+
+        // 버튼 상태에 따라 이미지 업데이트
+        function updateAirConditionerImage(state) {
+            const airConditionerImageOn = document.getElementById('airConditionerImageOn');
+            const airConditionerImageOff = document.getElementById('airConditionerImageOff');
+
+            if (state === 1) {
+                airConditionerImageOn.style.display = 'block'; // Show the "on" image
+                airConditionerImageOff.style.display = 'none'; // Hide the "off" image
+            } else {
+                airConditionerImageOn.style.display = 'none'; // Hide the "on" image
+                airConditionerImageOff.style.display = 'block'; // Show the "off" image
+            }
+        }
+
+        setInterval(updateSensorData, 5000);      // Update every 5 seconds (5000 milliseconds)
+        updateSensorData();      // Initial update
+    </script>
+</body>
+</html>
